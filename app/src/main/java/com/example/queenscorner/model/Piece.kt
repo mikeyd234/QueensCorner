@@ -1,4 +1,4 @@
-package model
+package com.example.queenscorner.model
 
 // Enum representing the type of piece
 enum class PieceType {

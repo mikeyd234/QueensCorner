@@ -1,5 +1,9 @@
 package model
 
+import com.example.queenscorner.model.Piece
+import com.example.queenscorner.model.PieceType
+import com.example.queenscorner.model.Position
+
 class Rook(owner: Int, position: Position) : Piece(owner, position, PieceType.ROOK) {
     override fun getValidMoves(board: Array<Array<Piece?>>): List<Position> {
         val moves = mutableListOf<Position>()

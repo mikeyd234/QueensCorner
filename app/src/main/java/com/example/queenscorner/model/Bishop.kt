@@ -1,5 +1,9 @@
 package model
 
+import com.example.queenscorner.model.Piece
+import com.example.queenscorner.model.PieceType
+import com.example.queenscorner.model.Position
+
 class Bishop(owner: Int, position: Position) : Piece(owner, position, PieceType.BISHOP) {
     override fun getValidMoves(board: Array<Array<Piece?>>): List<Position> {
         val moves = mutableListOf<Position>()
