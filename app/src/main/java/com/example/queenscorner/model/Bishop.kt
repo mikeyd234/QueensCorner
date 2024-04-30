@@ -1,4 +1,4 @@
-package model
+package com.example.queenscorner.model
 
 import com.example.queenscorner.model.Piece
 import com.example.queenscorner.model.PieceType

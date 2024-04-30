@@ -1,7 +1,7 @@
 package com.example.queenscorner.model
 
 // Represents the chessboard
-class Board(private val size: Int = 7) {
+class Board(private val size: Int) {
     // 2D array representing the board with optional pieces
     private val board: Array<Array<Piece?>> = Array(size) { Array(size) { null } }
 
@@ -18,6 +18,11 @@ class Board(private val size: Int = 7) {
         return null
     }
 
+    // Check if a given move is valid based on the piece's movement restrictions
+    private fun isValidMove(piece: Piece?, targetPosition: Position): Boolean {
+        return piece != null && isWithinBounds(targetPosition) && piece.getValidMoves(board).contains(targetPosition)
+    }
+
     // Place a piece at a given position
     fun placePiece(piece: Piece, position: Position) {
         if (isWithinBounds(position)) {
@@ -28,15 +33,21 @@ class Board(private val size: Int = 7) {
 
     // Move a piece from one position to another
     fun movePiece(from: Position, to: Position): Boolean {
-        if (isWithinBounds(from) && isWithinBounds(to)) {
-            val piece = getPiece(from)
+        val piece = getPiece(from)
+        val dest = getPiece(to)
+        if (isWithinBounds(from) && isValidMove(piece, to)) {
             if (piece != null) {
                 board[to.y][to.x] = piece
                 board[from.y][from.x] = null
                 piece.position = to
+                if (dest != null) {
+
+                }
                 return true
             }
+
         }
         return false
     }
+
 }
