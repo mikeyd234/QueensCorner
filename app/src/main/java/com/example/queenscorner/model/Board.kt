@@ -11,7 +11,7 @@ class Board(private val size: Int) {
     }
 
     // Get the piece at a given position
-    private fun getPiece(position: Position): Piece? {
+    fun getPiece(position: Position): Piece? {
         if (isWithinBounds(position)) {
             return board[position.y][position.x]
         }
@@ -31,23 +31,25 @@ class Board(private val size: Int) {
         }
     }
 
-    // Move a piece from one position to another
-    fun movePiece(from: Position, to: Position): Boolean {
+    // Move result function returning move success and piece elimination status
+    fun movePiece(from: Position, to: Position): Pair<Boolean, Boolean> {
         val piece = getPiece(from)
         val dest = getPiece(to)
+
+        // Check if within bounds and if the move is valid
         if (isWithinBounds(from) && isValidMove(piece, to)) {
             if (piece != null) {
-                board[to.y][to.x] = piece
-                board[from.y][from.x] = null
-                piece.position = to
-                if (dest != null) {
+                board[to.y][to.x] = piece // Place the piece on the new position
+                board[from.y][from.x] = null // Remove the piece from the original position
+                piece.position = to // Update the piece's position
 
-                }
-                return true
+                val pieceEliminated = (dest != null) // Check if there's a piece at the destination
+                return Pair(true, pieceEliminated) // Return move success and elimination status
             }
-
         }
-        return false
+
+        // Return false for unsuccessful move and no piece eliminated
+        return Pair(false, false)
     }
 
 }
