@@ -18,6 +18,8 @@ class QueensCorner {
     // List of players
     private val players = mutableListOf<Player>()
     private var currentPlayerIndex: Int = 0
+    // Game settings
+    private val settings: Settings = Settings(zombie = true)
 
     // Initialize the game with players and board setup
     init {
@@ -107,8 +109,10 @@ class QueensCorner {
         if (moved.first && moved.second){
             if (piece != null) {
                 removePiece(piece, piece.owner)
-                if(queenCheck(piece.owner)){
-
+                if(!queenCheck(piece.owner)){
+                    if(!settings.zombie){
+                        removeAllPieces(piece.owner)
+                    }
                 }
             }
 
@@ -149,6 +153,22 @@ class QueensCorner {
         if (!removed) {
             throw IllegalArgumentException("Piece not found in player's list")
         }
+    }
+
+    private fun removeAllPieces(playerId: Int){
+        // Ensure the player ID is within valid bounds
+        if (playerId < 0 || playerId >= players.size) {
+            throw IllegalArgumentException("Invalid player ID")
+        }
+
+        val player = players[playerId]
+        for(piece in player.pieces){
+            val removed = player.pieces.remove(piece)
+            if (!removed) {
+                throw IllegalArgumentException("Piece not found in player's list")
+            }
+        }
+
     }
 
 }
