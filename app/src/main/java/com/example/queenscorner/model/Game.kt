@@ -16,7 +16,7 @@ class QueensCorner {
     private val board = Board(7)
 
     // List of players
-    private val players = mutableListOf<Player>()
+    val players = mutableListOf<Player>()
     private var currentPlayerIndex: Int = 0
     // Game settings
     private val settings: Settings = Settings(zombie = true)
