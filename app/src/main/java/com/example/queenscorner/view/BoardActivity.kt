@@ -1,14 +1,10 @@
 package com.example.queenscorner.view
 
+import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.queenscorner.R
 import com.example.queenscorner.model.Bishop
@@ -20,7 +16,6 @@ import com.example.queenscorner.model.QueensCorner
 import com.example.queenscorner.model.Piece
 import com.example.queenscorner.model.Queen
 import com.example.queenscorner.model.Rook
-import com.example.queenscorner.ui.theme.QueensCornerTheme
 import java.lang.IllegalArgumentException
 
 class BoardActivity : ComponentActivity() {
@@ -33,12 +28,20 @@ class BoardActivity : ComponentActivity() {
     }
 
     private fun setupBoard() {
-        val boardLayout = findViewById<ConstraintLayout>(R.id.included_board)
+        // Place pieces on the board
+        for(player in game.players){
+            for(piece in player.pieces){
+                placePiece(piece)
+            }
+        }
 
-        for (x in 0 until 7) {
-            for (y in 0 until 7) {
+        for (x in 0 until 8) {
+            for (y in 0 until 8) {
                 // Generate button ID based on the square position
                 val buttonId = resources.getIdentifier("x${x}y${y}", "id", packageName)
+                if (buttonId == 0) {
+                    throw IllegalArgumentException("Button ID not found for x$x, y$y")
+                }
                 val button = findViewById<Button>(buttonId)
 
                 button.setOnClickListener {
@@ -46,17 +49,15 @@ class BoardActivity : ComponentActivity() {
                 }
             }
         }
-        // Place pieces on the board
-        for(player in game.players){
-            for(piece in player.pieces){
-                placePiece(piece)
-            }
-        }
+
     }
 
     private fun placePiece(piece: Piece){
         val pos = piece.position
         val squareId = resources.getIdentifier("square_${pos.x}${pos.y}", "id",  packageName)
+        if (squareId == 0) {
+            throw IllegalArgumentException("Square ID not found for x$pos.x, y$pos.y")
+        }
         val squareView= findViewById<ImageView>(squareId)
 
         squareView.setImageResource(getPieceDrawable(piece))
@@ -111,13 +112,12 @@ class BoardActivity : ComponentActivity() {
         } else {
             // "From" square is already selected, this is the "to" square
             val from = selectedFrom!!
-            val to = position
 
-            val moveSuccessful = game.movePiece(from, to) // Call your move function
+            val moveSuccessful = game.movePiece(from, position) // Call your move function
 
             if (moveSuccessful) {
                 selectedFrom = null // Clear the selection
-                updateBoard() // Refresh the board UI to reflect the move
+                updateBoard(from, position) // Refresh the board UI to reflect the move
             } else {
                 // Move failed, reset the selection and possibly give feedback
                 selectedFrom = null
@@ -127,7 +127,41 @@ class BoardActivity : ComponentActivity() {
 
 
     }
-    private fun updateBoard(){
-        TODO()
+    private fun updateBoard(from: Position, to: Position){
+        // Get image views
+        val fromView = getSquareView(from)
+        val toView = getSquareView(to)
+        // Ensure valid ImageViews
+        if(fromView != null && toView != null){
+            animatePieceMovement(fromView, toView)
+
+            //After the animation, update the resource of "to" with the new piece image
+            val piece = game.getCurrentPlayer().pieces.first {it.position == to}
+            toView.setImageResource(getPieceDrawable(piece))
+
+            // Clear the "from" square after the move
+            fromView.setImageResource(android.R.color.transparent)
+        }
+    }
+    private fun getSquareView(position: Position): ImageView?{
+        val squareId = resources.getIdentifier("x${position.x}y${position.y}", "id", packageName)
+        return findViewById(squareId)
+    }
+
+    private fun animatePieceMovement(fromView: ImageView, toView: ImageView){
+        val targetX = toView.x
+        val targetY = toView.y
+
+        // Animate piece movement with ObjectAnimator
+        val animatorX = ObjectAnimator.ofFloat(fromView, "x", targetX)
+        val animatorY = ObjectAnimator.ofFloat(fromView, "y", targetY)
+
+        // Animation duration
+        animatorX.duration = 500
+        animatorY.duration = 500
+
+        // Start both animations to move in a straight line
+        animatorX.start()
+        animatorY.start()
     }
 }
