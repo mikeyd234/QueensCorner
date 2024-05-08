@@ -13,7 +13,7 @@ data class Settings(
 
 class QueensCorner {
     // Create an instance of the Board class, with an 8x8 default size
-    private val board = Board(7)
+    private val board = Board(8)
 
     // List of players
     val players = mutableListOf<Player>()
@@ -24,6 +24,7 @@ class QueensCorner {
     // Initialize the game with players and board setup
     init {
         setupPlayers()
+        populateBoardFromPlayers(board.board, players)
     }
 
 
@@ -89,14 +90,41 @@ class QueensCorner {
         }
         return pieces
     }
+    private fun populateBoardFromPlayers(board: Array<Array<Piece?>>, players: List<Player>) {
+        // Clear the board by setting all positions to null
+        for (x in board.indices) {
+            for (y in 0 until board[x].size) {
+                board[x][y] = null // Clear the board
+            }
+        }
+
+        // Now iterate through each player and place their pieces on the board
+        for (player in players) {
+            for (piece in player.pieces) {
+                val position = piece.position // Get the piece's position
+
+                // Ensure the position is within bounds
+                if (position.x in board.indices && position.y in 0 until board[0].size) {
+                    board[position.x][position.y] = piece // Place the piece on the board
+                } else {
+                    throw IllegalArgumentException("Piece position out of bounds: $position")
+                }
+            }
+        }
+    }
+
+
 
     // Get the current player for the current turn
     fun getCurrentPlayer(): Player {
         return players[currentPlayerIndex]
     }
+    fun getCurrentPlayerIndex(): Int {
+        return currentPlayerIndex
+    }
 
     // Move to the next player's turn
-    private fun nextTurn() {
+    fun nextTurn() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size
     }
 
@@ -117,11 +145,8 @@ class QueensCorner {
             }
 
         }
-        if (moved.first) {
-            nextTurn() // If the move was successful, proceed to the next turn
-            return true
-        }
-        return false
+        // If the move was successful, returns true
+        return moved.first
     }
 
     // Function to check if a player with a given ID has a queen piece
@@ -169,6 +194,17 @@ class QueensCorner {
             }
         }
 
+    }
+
+    fun pieceCheck(playerId: Int, position: Position): Boolean{
+        if (playerId < 0 || playerId >= players.size) {
+            throw IllegalArgumentException("Invalid player ID")
+        }
+        // if there exists a piece at position with player ID.
+        val player = players[playerId]
+
+        // Check if any piece in the player's list is at the specified position
+        return player.pieces.any { it.position == position }
     }
 
 }

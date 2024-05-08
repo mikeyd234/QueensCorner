@@ -3,7 +3,7 @@ package com.example.queenscorner.model
 // Represents the chessboard
 class Board(private val size: Int) {
     // 2D array representing the board with optional pieces
-    private val board: Array<Array<Piece?>> = Array(size) { Array(size) { null } }
+    val board: Array<Array<Piece?>> = Array(size) { Array(size) { null } }
 
     // Check if a given position is within the board's bounds
     private fun isWithinBounds(position: Position): Boolean {

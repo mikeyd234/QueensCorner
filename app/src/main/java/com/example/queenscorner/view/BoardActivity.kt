@@ -2,8 +2,11 @@ package com.example.queenscorner.view
 
 import android.animation.ObjectAnimator
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.queenscorner.R
@@ -21,6 +24,8 @@ import java.lang.IllegalArgumentException
 class BoardActivity : ComponentActivity() {
     private var selectedFrom: Position? = null
     private var game: QueensCorner = QueensCorner()
+    private val defaultColor = 0x00FFFFFF // Transparent
+    private val selectedColor = 0x6000FF00.toInt() // semi transparent green
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_board)
@@ -44,8 +49,14 @@ class BoardActivity : ComponentActivity() {
                 }
                 val button = findViewById<Button>(buttonId)
 
-                button.setOnClickListener {
-                    handleSquareClick(Position(x, y))
+                if (button == null) {
+                    Log.e("BoardSetup", "Button not found for ID: $buttonId")
+                } else {
+                    Log.d("BoardSetup", "Button found for ID: $buttonId")
+                    button.setOnClickListener {
+                        handleSquareClick(Position(x, y))
+                        Log.d("Button", "initialized x$x, y$y")
+                    }
                 }
             }
         }
@@ -106,46 +117,67 @@ class BoardActivity : ComponentActivity() {
     }
 
     private fun handleSquareClick(position: Position) {
+        val buttonId = resources.getIdentifier("x${position.x}y${position.y}", "id", packageName)
+        val button = findViewById<Button>(buttonId)
         if (selectedFrom == null) { // No square is selected yet
-            selectedFrom = position // Set the "from" square
-            // Optional: Provide visual feedback for selection (e.g., changing color)
+            if(game.pieceCheck(game.getCurrentPlayerIndex(), position)) {
+                selectedFrom = position // Set the "from" square
+                // Change the background color to indicate selection
+                button?.setBackgroundColor(selectedColor)
+            }
         } else {
             // "From" square is already selected, this is the "to" square
             val from = selectedFrom!!
 
             val moveSuccessful = game.movePiece(from, position) // Call your move function
-
+            val fromButtonId = resources.getIdentifier("x${from.x}y${from.y}", "id", packageName)
+            val fromButton = findViewById<Button>(fromButtonId)
             if (moveSuccessful) {
+                // Reset the color of the "from" button
+                fromButton?.setBackgroundColor(defaultColor)
                 selectedFrom = null // Clear the selection
                 updateBoard(from, position) // Refresh the board UI to reflect the move
             } else {
                 // Move failed, reset the selection and possibly give feedback
+                fromButton?.setBackgroundColor(defaultColor) // Reset the background color
                 selectedFrom = null
-                // Optional: show a message about the failed move
+                Toast.makeText(this, "Invalid move", Toast.LENGTH_SHORT).show()
             }
         }
 
 
     }
-    private fun updateBoard(from: Position, to: Position){
-        // Get image views
+    private fun updateBoard(from: Position, to: Position) {
         val fromView = getSquareView(from)
         val toView = getSquareView(to)
-        // Ensure valid ImageViews
-        if(fromView != null && toView != null){
-            animatePieceMovement(fromView, toView)
 
-            //After the animation, update the resource of "to" with the new piece image
-            val piece = game.getCurrentPlayer().pieces.first {it.position == to}
+        if (fromView == null || toView == null) {
+            Log.e("UpdateBoard", "Invalid square: from=$from, to=$to")
+            return // Early exit if either view is not found
+        }
+
+        animatePieceMovement(fromView, toView)
+
+        val piece = game.getCurrentPlayer().pieces.firstOrNull { it.position == to }
+
+        // After piece is moved, proceed to next turn
+        game.nextTurn()
+
+        if (piece != null) {
             toView.setImageResource(getPieceDrawable(piece))
-
-            // Clear the "from" square after the move
             fromView.setImageResource(android.R.color.transparent)
+        } else {
+            Log.e("UpdateBoard", "No piece found at position $to")
         }
     }
     private fun getSquareView(position: Position): ImageView?{
-        val squareId = resources.getIdentifier("x${position.x}y${position.y}", "id", packageName)
-        return findViewById(squareId)
+        val squareId = resources.getIdentifier("square_${position.x}${position.y}", "id", packageName)
+        val squareView = findViewById<View>(squareId)
+        if (squareView is ImageView) { // Ensure it's an ImageView before casting
+            return squareView
+        } else {
+            throw IllegalArgumentException("Expected ImageView, found different type at position: $position")
+        }
     }
 
     private fun animatePieceMovement(fromView: ImageView, toView: ImageView){
