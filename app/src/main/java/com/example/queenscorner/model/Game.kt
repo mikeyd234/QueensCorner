@@ -49,43 +49,43 @@ class QueensCorner {
                 pieces.add(Bishop(id, Position(1, 0)))
                 pieces.add(Queen(id, Position(0, 0)))
                 pieces.add(King(id, Position(2, 2)))
-                pieces.add(Pawn(id, Position(0, 2)))
-                pieces.add(Pawn(id, Position(1, 2)))
-                pieces.add(Pawn(id, Position(2, 1)))
-                pieces.add(Pawn(id, Position(2, 0)))
+                pieces.add(PawnVer(id, Position(0, 2)))
+                pieces.add(PawnVer(id, Position(1, 2)))
+                pieces.add(PawnHor(id, Position(2, 1)))
+                pieces.add(PawnHor(id, Position(2, 0)))
             }
-            1 -> {
+            3 -> {
                 pieces.add(Rook(id, Position(6, 1)))
                 pieces.add(Knight(id, Position(7, 1)))
                 pieces.add(Bishop(id, Position(6, 0)))
                 pieces.add(Queen(id, Position(7, 0)))
                 pieces.add(King(id, Position(5, 2)))
-                pieces.add(Pawn(id, Position(5, 1)))
-                pieces.add(Pawn(id, Position(5, 0)))
-                pieces.add(Pawn(id, Position(6, 2)))
-                pieces.add(Pawn(id, Position(7, 2)))
+                pieces.add(PawnHor(id, Position(5, 1)))
+                pieces.add(PawnHor(id, Position(5, 0)))
+                pieces.add(PawnVer(id, Position(6, 2)))
+                pieces.add(PawnVer(id, Position(7, 2)))
             }
-            2 -> {
+            1 -> {
                 pieces.add(Rook(id, Position(1, 6)))
                 pieces.add(Knight(id, Position(0, 6)))
                 pieces.add(Bishop(id, Position(1, 7)))
                 pieces.add(Queen(id, Position(0, 7)))
                 pieces.add(King(id, Position(2, 5)))
-                pieces.add(Pawn(id, Position(0, 5)))
-                pieces.add(Pawn(id, Position(1, 5)))
-                pieces.add(Pawn(id, Position(2, 7)))
-                pieces.add(Pawn(id, Position(2, 6)))
+                pieces.add(PawnVer(id, Position(0, 5)))
+                pieces.add(PawnVer(id, Position(1, 5)))
+                pieces.add(PawnHor(id, Position(2, 7)))
+                pieces.add(PawnHor(id, Position(2, 6)))
             }
-            3 -> {
+            2 -> {
                 pieces.add(Rook(id, Position(6, 6)))
                 pieces.add(Knight(id, Position(7, 6)))
                 pieces.add(Bishop(id, Position(6, 7)))
                 pieces.add(Queen(id, Position(7, 7)))
                 pieces.add(King(id, Position(5, 5)))
-                pieces.add(Pawn(id, Position(7, 5)))
-                pieces.add(Pawn(id, Position(6, 5)))
-                pieces.add(Pawn(id, Position(5, 6)))
-                pieces.add(Pawn(id, Position(5, 7)))
+                pieces.add(PawnVer(id, Position(7, 5)))
+                pieces.add(PawnVer(id, Position(6, 5)))
+                pieces.add(PawnHor(id, Position(5, 6)))
+                pieces.add(PawnHor(id, Position(5, 7)))
             }
         }
         return pieces
@@ -105,7 +105,7 @@ class QueensCorner {
 
                 // Ensure the position is within bounds
                 if (position.x in board.indices && position.y in 0 until board[0].size) {
-                    board[position.x][position.y] = piece // Place the piece on the board
+                    board[position.y][position.x] = piece // Place the piece on the board
                 } else {
                     throw IllegalArgumentException("Piece position out of bounds: $position")
                 }

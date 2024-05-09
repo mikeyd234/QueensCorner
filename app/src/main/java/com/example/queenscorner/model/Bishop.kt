@@ -18,17 +18,20 @@ class Bishop(owner: Int, position: Position) : Piece(owner, position, PieceType.
 
         // Add valid moves in each direction
         for (direction in directions) {
-            var pos = Position(position.x + direction.x, position.y + direction.y)
-            while (isWithinBoard(pos)) {
-                if (board[pos.y][pos.x] == null) {
-                    moves.add(pos)
-                } else {
-                    if (board[pos.y][pos.x]!!.owner != owner) {
+            var i = 1
+            while(i < 8){
+                val pos = Position(position.x + (i*direction.x), position.y + (i*direction.y))
+                if (isWithinBoard(pos)) {
+                    if (board[pos.y][pos.x] == null) {
                         moves.add(pos)
+                    } else {
+                        if (board[pos.y][pos.x]!!.owner != owner) {
+                            moves.add(pos)
+                        }
+                        break
                     }
-                    break
                 }
-                pos = Position(pos.x + direction.x, pos.y + direction.y)
+                i++
             }
         }
 

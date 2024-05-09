@@ -37,7 +37,7 @@ class Board(private val size: Int) {
         val dest = getPiece(to)
 
         // Check if within bounds and if the move is valid
-        if (isWithinBounds(from) && isValidMove(piece, to)) {
+        if (isValidMove(piece, to)) {
             if (piece != null) {
                 board[to.y][to.x] = piece // Place the piece on the new position
                 board[from.y][from.x] = null // Remove the piece from the original position

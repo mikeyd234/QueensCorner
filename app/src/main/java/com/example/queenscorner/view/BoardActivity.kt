@@ -8,12 +8,12 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.queenscorner.R
 import com.example.queenscorner.model.Bishop
 import com.example.queenscorner.model.King
 import com.example.queenscorner.model.Knight
-import com.example.queenscorner.model.Pawn
+import com.example.queenscorner.model.PawnHor
+import com.example.queenscorner.model.PawnVer
 import com.example.queenscorner.model.Position
 import com.example.queenscorner.model.QueensCorner
 import com.example.queenscorner.model.Piece
@@ -77,7 +77,8 @@ class BoardActivity : ComponentActivity() {
     private fun getPieceDrawable(piece: Piece): Int{
         return when(piece.owner){
             0 -> when(piece){
-                is Pawn -> R.drawable.whitepawn
+                is PawnHor -> R.drawable.whitepawn
+                is PawnVer -> R.drawable.whitepawn
                 is Bishop -> R.drawable.whitebishop
                 is King -> R.drawable.whiteking
                 is Knight -> R.drawable.whiteknight
@@ -86,7 +87,8 @@ class BoardActivity : ComponentActivity() {
                 else -> throw IllegalArgumentException("Unknown Piece type")
             }
             1 -> when(piece){
-                is Pawn -> R.drawable.bluepawn
+                is PawnHor -> R.drawable.bluepawn
+                is PawnVer -> R.drawable.bluepawn
                 is Bishop -> R.drawable.bluebishop
                 is King -> R.drawable.blueking
                 is Knight -> R.drawable.blueknight
@@ -95,7 +97,8 @@ class BoardActivity : ComponentActivity() {
                 else -> throw IllegalArgumentException("Unknown Piece type")
             }
             2 -> when(piece){
-                is Pawn -> R.drawable.redpawn
+                is PawnHor -> R.drawable.redpawn
+                is PawnVer -> R.drawable.redpawn
                 is Bishop -> R.drawable.redbishop
                 is King -> R.drawable.redking
                 is Knight -> R.drawable.redknight
@@ -104,7 +107,8 @@ class BoardActivity : ComponentActivity() {
                 else -> throw IllegalArgumentException("Unknown Piece type")
             }
             3 -> when(piece){
-                is Pawn -> R.drawable.blackpawn
+                is PawnHor -> R.drawable.blackpawn
+                is PawnVer -> R.drawable.blackpawn
                 is Bishop -> R.drawable.blackbishop
                 is King -> R.drawable.blackking
                 is Knight -> R.drawable.blackknight
