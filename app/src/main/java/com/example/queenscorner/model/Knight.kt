@@ -26,4 +26,7 @@ class Knight(owner: Int, position: Position) : Piece(owner, position, PieceType.
 
         return moves
     }
+    override fun otherSideCheck(): Boolean {
+        return false
+    }
 }

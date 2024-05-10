@@ -9,7 +9,7 @@ enum class PieceType {
 data class Position(val x: Int, val y: Int)
 
 // Abstract base class for all pieces
-abstract class Piece(val owner: Int, var position: Position, val pieceType: PieceType) {
+abstract class Piece(val owner: Int, var position: Position, var pieceType: PieceType) {
     // Abstract method to get valid moves for a piece
     abstract fun getValidMoves(board: Array<Array<Piece?>>): List<Position>
 
@@ -17,4 +17,6 @@ abstract class Piece(val owner: Int, var position: Position, val pieceType: Piec
     protected fun isWithinBoard(pos: Position): Boolean {
         return pos.x in 0..7 && pos.y in 0..7
     }
+
+    abstract fun otherSideCheck(): Boolean
 }

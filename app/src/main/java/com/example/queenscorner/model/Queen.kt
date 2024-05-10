@@ -57,4 +57,7 @@ class Queen(owner: Int, position: Position) : Piece(owner, position, PieceType.Q
 
         return moves
     }
+    override fun otherSideCheck(): Boolean {
+        return false
+    }
 }

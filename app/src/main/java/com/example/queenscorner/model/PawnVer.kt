@@ -37,4 +37,16 @@ class PawnVer(owner: Int, position: Position) : Piece(owner, position, PieceType
 
         return moves
     }
+    override fun otherSideCheck(): Boolean{
+        if(owner == 0 || owner == 3){
+            if(position.y == 7){
+                return true
+            }
+        }else{
+            if(position.y == 0){
+                return true
+            }
+        }
+        return false
+    }
 }

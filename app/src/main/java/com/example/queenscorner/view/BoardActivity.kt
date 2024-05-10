@@ -34,8 +34,8 @@ class BoardActivity : ComponentActivity() {
 
     private fun setupBoard() {
         // Place pieces on the board
-        for(player in game.players){
-            for(piece in player.pieces){
+        for (player in game.players) {
+            for (piece in player.pieces) {
                 placePiece(piece)
             }
         }
@@ -63,20 +63,20 @@ class BoardActivity : ComponentActivity() {
 
     }
 
-    private fun placePiece(piece: Piece){
+    private fun placePiece(piece: Piece) {
         val pos = piece.position
-        val squareId = resources.getIdentifier("square_${pos.x}${pos.y}", "id",  packageName)
+        val squareId = resources.getIdentifier("square_${pos.x}${pos.y}", "id", packageName)
         if (squareId == 0) {
             throw IllegalArgumentException("Square ID not found for x$pos.x, y$pos.y")
         }
-        val squareView= findViewById<ImageView>(squareId)
+        val squareView = findViewById<ImageView>(squareId)
 
         squareView.setImageResource(getPieceDrawable(piece))
     }
 
-    private fun getPieceDrawable(piece: Piece): Int{
-        return when(piece.owner){
-            0 -> when(piece){
+    private fun getPieceDrawable(piece: Piece): Int {
+        return when (piece.owner) {
+            0 -> when (piece) {
                 is PawnHor -> R.drawable.whitepawn
                 is PawnVer -> R.drawable.whitepawn
                 is Bishop -> R.drawable.whitebishop
@@ -86,7 +86,8 @@ class BoardActivity : ComponentActivity() {
                 is Queen -> R.drawable.whitequeen
                 else -> throw IllegalArgumentException("Unknown Piece type")
             }
-            1 -> when(piece){
+
+            1 -> when (piece) {
                 is PawnHor -> R.drawable.bluepawn
                 is PawnVer -> R.drawable.bluepawn
                 is Bishop -> R.drawable.bluebishop
@@ -96,7 +97,8 @@ class BoardActivity : ComponentActivity() {
                 is Queen -> R.drawable.bluequeen
                 else -> throw IllegalArgumentException("Unknown Piece type")
             }
-            2 -> when(piece){
+
+            2 -> when (piece) {
                 is PawnHor -> R.drawable.redpawn
                 is PawnVer -> R.drawable.redpawn
                 is Bishop -> R.drawable.redbishop
@@ -106,7 +108,8 @@ class BoardActivity : ComponentActivity() {
                 is Queen -> R.drawable.redqueen
                 else -> throw IllegalArgumentException("Unknown Piece type")
             }
-            3 -> when(piece){
+
+            3 -> when (piece) {
                 is PawnHor -> R.drawable.blackpawn
                 is PawnVer -> R.drawable.blackpawn
                 is Bishop -> R.drawable.blackbishop
@@ -116,6 +119,7 @@ class BoardActivity : ComponentActivity() {
                 is Queen -> R.drawable.blackqueen
                 else -> throw IllegalArgumentException("Unknown Piece type")
             }
+
             else -> throw IllegalArgumentException("Unknown Piece owner")
         }
     }
@@ -124,7 +128,7 @@ class BoardActivity : ComponentActivity() {
         val buttonId = resources.getIdentifier("x${position.x}y${position.y}", "id", packageName)
         val button = findViewById<Button>(buttonId)
         if (selectedFrom == null) { // No square is selected yet
-            if(game.pieceCheck(game.getCurrentPlayerIndex(), position)) {
+            if (game.pieceCheck(game.getCurrentPlayerIndex(), position)) {
                 selectedFrom = position // Set the "from" square
                 // Change the background color to indicate selection
                 button?.setBackgroundColor(selectedColor)
@@ -136,7 +140,7 @@ class BoardActivity : ComponentActivity() {
             val moveSuccessful = game.movePiece(from, position) // Call your move function
             val fromButtonId = resources.getIdentifier("x${from.x}y${from.y}", "id", packageName)
             val fromButton = findViewById<Button>(fromButtonId)
-            if (moveSuccessful) {
+            if (moveSuccessful.first) {
                 // Reset the color of the "from" button
                 fromButton?.setBackgroundColor(defaultColor)
                 selectedFrom = null // Clear the selection
@@ -147,10 +151,14 @@ class BoardActivity : ComponentActivity() {
                 selectedFrom = null
                 Toast.makeText(this, "Invalid move", Toast.LENGTH_SHORT).show()
             }
+            if (moveSuccessful.second != null){
+                getPieceDrawable(moveSuccessful.second!!)
+            }
         }
 
 
     }
+
     private fun updateBoard(from: Position, to: Position) {
         val fromView = getSquareView(from)
         val toView = getSquareView(to)
@@ -159,8 +167,6 @@ class BoardActivity : ComponentActivity() {
             Log.e("UpdateBoard", "Invalid square: from=$from, to=$to")
             return // Early exit if either view is not found
         }
-
-        animatePieceMovement(fromView, toView)
 
         val piece = game.getCurrentPlayer().pieces.firstOrNull { it.position == to }
 
@@ -174,30 +180,15 @@ class BoardActivity : ComponentActivity() {
             Log.e("UpdateBoard", "No piece found at position $to")
         }
     }
-    private fun getSquareView(position: Position): ImageView?{
-        val squareId = resources.getIdentifier("square_${position.x}${position.y}", "id", packageName)
+
+    private fun getSquareView(position: Position): ImageView? {
+        val squareId =
+            resources.getIdentifier("square_${position.x}${position.y}", "id", packageName)
         val squareView = findViewById<View>(squareId)
         if (squareView is ImageView) { // Ensure it's an ImageView before casting
             return squareView
         } else {
             throw IllegalArgumentException("Expected ImageView, found different type at position: $position")
         }
-    }
-
-    private fun animatePieceMovement(fromView: ImageView, toView: ImageView){
-        val targetX = toView.x
-        val targetY = toView.y
-
-        // Animate piece movement with ObjectAnimator
-        val animatorX = ObjectAnimator.ofFloat(fromView, "x", targetX)
-        val animatorY = ObjectAnimator.ofFloat(fromView, "y", targetY)
-
-        // Animation duration
-        animatorX.duration = 500
-        animatorY.duration = 500
-
-        // Start both animations to move in a straight line
-        animatorX.start()
-        animatorY.start()
     }
 }

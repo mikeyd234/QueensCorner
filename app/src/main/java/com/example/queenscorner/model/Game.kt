@@ -14,12 +14,13 @@ data class Settings(
 class QueensCorner {
     // Create an instance of the Board class, with an 8x8 default size
     private val board = Board(8)
-
+    private var queensLeft = 4
     // List of players
     val players = mutableListOf<Player>()
     private var currentPlayerIndex: Int = 0
     // Game settings
     private val settings: Settings = Settings(zombie = true)
+    private val hasWinner = false
 
     // Initialize the game with players and board setup
     init {
@@ -129,7 +130,7 @@ class QueensCorner {
     }
 
     // Move a piece from one position to another
-    fun movePiece(from: Position, to: Position): Boolean {
+    fun movePiece(from: Position, to: Position): Pair<Boolean, Piece?> {
         val piece = board.getPiece(to)
         // Use the board's movePiece method
         val moved = board.movePiece(from, to)
@@ -137,7 +138,9 @@ class QueensCorner {
         if (moved.first && moved.second){
             if (piece != null) {
                 removePiece(piece, piece.owner)
-                if(!queenCheck(piece.owner)){
+                if(piece is Queen){
+                    val id = piece.owner
+                    players[id].hasQueen = false
                     if(!settings.zombie){
                         removeAllPieces(piece.owner)
                     }
@@ -145,8 +148,20 @@ class QueensCorner {
             }
 
         }
+        // If pawn makes it to other side of the board while the queen is dead, delete the pawn and turn it into a new queen
+        if(moved.third){
+            val currentId = getCurrentPlayerIndex()
+            players[currentId].hasQueen = true
+            var newQueen = board.getPiece(to)
+            if (newQueen != null) {
+                removePiece(newQueen, currentId)
+                getCurrentPlayer().pieces.add(currentId, Queen(currentId, to))
+                newQueen = board.getPiece(to)
+            }
+            return Pair(moved.first, newQueen)
+        }
         // If the move was successful, returns true
-        return moved.first
+        return Pair(moved.first, null)
     }
 
     // Function to check if a player with a given ID has a queen piece

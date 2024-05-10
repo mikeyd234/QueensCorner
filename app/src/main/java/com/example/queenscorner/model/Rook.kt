@@ -34,4 +34,7 @@ class Rook(owner: Int, position: Position) : Piece(owner, position, PieceType.RO
 
         return moves
     }
+    override fun otherSideCheck(): Boolean {
+        return false
+    }
 }

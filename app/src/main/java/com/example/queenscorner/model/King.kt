@@ -27,4 +27,7 @@ class King(owner: Int, position: Position) : Piece(owner, position, PieceType.KI
 
         return moves
     }
+    override fun otherSideCheck(): Boolean {
+        return false
+    }
 }

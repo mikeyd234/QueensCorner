@@ -33,4 +33,16 @@ class PawnHor(owner: Int, position: Position) : Piece(owner, position, PieceType
 
         return moves
     }
+    override fun otherSideCheck(): Boolean{
+        if(owner == 0 || owner == 1){
+            if(position.x == 7){
+                return true
+            }
+        }else{
+            if(position.x == 0){
+                return true
+            }
+        }
+        return false
+    }
 }
