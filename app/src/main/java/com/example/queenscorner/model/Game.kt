@@ -4,23 +4,25 @@ package com.example.queenscorner.model
 data class Player(
     val id: Int,
     var pieces: MutableList<Piece>,
-    var hasQueen: Boolean
+    var hasQueen: Boolean,
+    val name: String,
+    var out: Boolean
 )
 
 data class Settings(
-    val zombie: Boolean
+    var zombie: Boolean
 )
 
 class QueensCorner {
     // Create an instance of the Board class, with an 8x8 default size
-    private val board = Board(8)
-    private var queensLeft = 4
+    val board = Board(8)
     // List of players
     val players = mutableListOf<Player>()
     private var currentPlayerIndex: Int = 0
     // Game settings
-    private val settings: Settings = Settings(zombie = true)
-    private val hasWinner = false
+    val settings: Settings = Settings(zombie = false)
+    private var hasWinner = false
+    private var queensLeft = 4
 
     // Initialize the game with players and board setup
     init {
@@ -31,10 +33,10 @@ class QueensCorner {
 
     // Set up the players for the game
     private fun setupPlayers() {
-        players.add(Player(0, defaultPieces(0), true))
-        players.add(Player(1,defaultPieces(1), true))
-        players.add(Player(2,defaultPieces(2), true))
-        players.add(Player(3,defaultPieces(3), true))
+        players.add(Player(0, defaultPieces(0), true, "White", false))
+        players.add(Player(1,defaultPieces(1), true, "Blue", false))
+        players.add(Player(2,defaultPieces(2), true, "Red", false))
+        players.add(Player(3,defaultPieces(3), true, "Black", false))
     }
 
     // Set up the initial pieces on the board
@@ -127,13 +129,17 @@ class QueensCorner {
     // Move to the next player's turn
     fun nextTurn() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size
+        if(players[currentPlayerIndex].out){
+            nextTurn()
+        }
     }
 
     // Move a piece from one position to another
-    fun movePiece(from: Position, to: Position): Pair<Boolean, Piece?> {
+    fun movePiece(from: Position, to: Position): Triple<Boolean, Piece?, Boolean> {
         val piece = board.getPiece(to)
         // Use the board's movePiece method
         val moved = board.movePiece(from, to)
+        var playerOut = false
         // If piece is moved to already occupied position, remove it from the corresponding player's pieces
         if (moved.first && moved.second){
             if (piece != null) {
@@ -141,8 +147,12 @@ class QueensCorner {
                 if(piece is Queen){
                     val id = piece.owner
                     players[id].hasQueen = false
+                    queensLeft--
                     if(!settings.zombie){
                         removeAllPieces(piece.owner)
+                        val outPlayer = players[piece.owner]
+                        outPlayer.out = true
+                        playerOut = true
                     }
                 }
             }
@@ -156,12 +166,14 @@ class QueensCorner {
             if (newQueen != null) {
                 removePiece(newQueen, currentId)
                 getCurrentPlayer().pieces.add(currentId, Queen(currentId, to))
+                board.board[to.y][to.x] = getCurrentPlayer().pieces.first {it is Queen}
                 newQueen = board.getPiece(to)
+                queensLeft++
             }
-            return Pair(moved.first, newQueen)
+            return Triple(moved.first, newQueen, playerOut)
         }
         // If the move was successful, returns true
-        return Pair(moved.first, null)
+        return Triple(moved.first, null, playerOut)
     }
 
     // Function to check if a player with a given ID has a queen piece
@@ -202,14 +214,19 @@ class QueensCorner {
         }
 
         val player = players[playerId]
-        for(piece in player.pieces){
+
+        // Create a list to store pieces to be removed
+        val piecesToRemove = ArrayList(player.pieces)
+
+        // Iterate over the list of pieces to be removed and remove them from the player's list
+        for(piece in piecesToRemove){
             val removed = player.pieces.remove(piece)
             if (!removed) {
                 throw IllegalArgumentException("Piece not found in player's list")
             }
         }
-
     }
+
 
     fun pieceCheck(playerId: Int, position: Position): Boolean{
         if (playerId < 0 || playerId >= players.size) {
@@ -220,6 +237,13 @@ class QueensCorner {
 
         // Check if any piece in the player's list is at the specified position
         return player.pieces.any { it.position == position }
+    }
+
+    fun winCheck(): Boolean{
+        if(queensLeft == 1){
+            hasWinner = true
+        }
+        return hasWinner
     }
 
 }

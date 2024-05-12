@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">QueensCorner</string>
+    <string name="player_name_placeholder">Player\'s Name</string>"
 </resources>

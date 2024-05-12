@@ -1,11 +1,14 @@
 package com.example.queenscorner.view
 
 import android.animation.ObjectAnimator
+import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.example.queenscorner.R
@@ -26,10 +29,16 @@ class BoardActivity : ComponentActivity() {
     private var game: QueensCorner = QueensCorner()
     private val defaultColor = 0x00FFFFFF // Transparent
     private val selectedColor = 0x6000FF00.toInt() // semi transparent green
+    private lateinit var turnDisplay: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_board)
+        turnDisplay = findViewById<TextView>(R.id.turn_display)
+        val zombie = intent.getBooleanExtra("zombie", false)
+        game.settings.zombie = zombie
         setupBoard()
+        updateTurnDisplay(game.getCurrentPlayer().name)
     }
 
     private fun setupBoard() {
@@ -154,6 +163,9 @@ class BoardActivity : ComponentActivity() {
             if (moveSuccessful.second != null){
                 getPieceDrawable(moveSuccessful.second!!)
             }
+            if (moveSuccessful.third){
+                removePieces()
+            }
         }
 
 
@@ -170,9 +182,13 @@ class BoardActivity : ComponentActivity() {
 
         val piece = game.getCurrentPlayer().pieces.firstOrNull { it.position == to }
 
-        // After piece is moved, proceed to next turn
-        game.nextTurn()
-
+        // After piece is moved, check for winner, if no winner go to next turn
+        if(game.winCheck()){
+            showWinnerPopup(game.getCurrentPlayer().name)
+        }else {
+            game.nextTurn()
+            updateTurnDisplay(game.getCurrentPlayer().name)
+        }
         if (piece != null) {
             toView.setImageResource(getPieceDrawable(piece))
             fromView.setImageResource(android.R.color.transparent)
@@ -191,4 +207,39 @@ class BoardActivity : ComponentActivity() {
             throw IllegalArgumentException("Expected ImageView, found different type at position: $position")
         }
     }
+
+    private fun showWinnerPopup(winnerName: String) {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.winner_popup)
+        val textWinner = dialog.findViewById<TextView>(R.id.text_winner)
+        textWinner.text = "Player $winnerName wins!"
+
+        val buttonOk = dialog.findViewById<Button>(R.id.button_ok)
+        buttonOk.setOnClickListener {
+            val intent = Intent(this,MainActivity::class.java)
+            startActivity(intent)
+            // Perform any action needed after dismissing the dialog, such as restarting the game.
+        }
+        dialog.show()
+    }
+    private fun updateTurnDisplay(playerName: String) {
+        val displayText = "$playerName's turn"
+        turnDisplay.text = displayText
+    }
+
+    private fun removePieces() {
+        for (x in 0 until 8) {
+            for (y in 0 until 8) {
+                val position = Position(x, y)
+                val squareView = getSquareView(position)
+                val piece = game.board.getPiece(position)
+
+                if (piece?.owner != null && game.players[piece.owner].pieces.isEmpty()) {
+                    squareView?.setImageResource(android.R.color.transparent)
+                }
+            }
+        }
+    }
+
+
 }

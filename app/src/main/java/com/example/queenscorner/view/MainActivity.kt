@@ -1,8 +1,13 @@
 package com.example.queenscorner.view
 
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,24 +28,33 @@ class MainActivity : ComponentActivity() {
         // Button to go to board activity
         val newGameButton = findViewById<Button>(R.id.new_game)
         newGameButton.setOnClickListener{
-            val intent = Intent(this,BoardActivity::class.java)
-            startActivity(intent)
+            showGameSettingsDialog(this, it)
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun showGameSettingsDialog(context: Context, view: View) {
+    val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_game_settings, null)
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    QueensCornerTheme {
-        Greeting("Android")
-    }
+    val settingsDialog = AlertDialog.Builder(context)
+        .setTitle("Game Settings")
+        .setView(dialogView)
+        .setPositiveButton("OK") { _, _ ->
+            // Extract selected settings from dialogView
+            val zombieCheckbox = dialogView.findViewById<CheckBox>(R.id.option1_checkbox)
+            val zombieSelected = zombieCheckbox.isChecked
+
+            // Prepare selected settings as needed
+
+            // Start BoardActivity with selected settings
+            val intent = Intent(context, BoardActivity::class.java).apply {
+                putExtra("zombie", zombieSelected)
+
+            }
+            context.startActivity(intent)
+        }
+        .setNegativeButton("Cancel", null)
+        .create()
+
+    settingsDialog.show()
 }
