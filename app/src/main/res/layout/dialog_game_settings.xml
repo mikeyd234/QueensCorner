@@ -12,4 +12,11 @@
         android:layout_height="wrap_content"
         android:text="Zombie Mode" />
 
+    <EditText
+        android:id="@+id/num_players_edittext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter number of players"
+        android:inputType="number" />
+
 </LinearLayout>

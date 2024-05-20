@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,11 +45,14 @@ fun showGameSettingsDialog(context: Context, view: View) {
             val zombieCheckbox = dialogView.findViewById<CheckBox>(R.id.option1_checkbox)
             val zombieSelected = zombieCheckbox.isChecked
 
-            // Prepare selected settings as needed
+            val numPlayersEditText = dialogView.findViewById<EditText>(R.id.num_players_edittext)
+            val numPlayersText = numPlayersEditText.text.toString()
+            val numPlayers = if (numPlayersText.isNotEmpty()) numPlayersText.toInt() else 4
 
             // Start BoardActivity with selected settings
             val intent = Intent(context, BoardActivity::class.java).apply {
                 putExtra("zombie", zombieSelected)
+                putExtra("numPlayers", numPlayers)
 
             }
             context.startActivity(intent)

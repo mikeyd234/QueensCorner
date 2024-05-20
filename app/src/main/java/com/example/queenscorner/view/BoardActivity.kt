@@ -15,6 +15,7 @@ import com.example.queenscorner.R
 import com.example.queenscorner.model.Bishop
 import com.example.queenscorner.model.King
 import com.example.queenscorner.model.Knight
+import com.example.queenscorner.model.Minimax
 import com.example.queenscorner.model.PawnHor
 import com.example.queenscorner.model.PawnVer
 import com.example.queenscorner.model.Position
@@ -22,6 +23,9 @@ import com.example.queenscorner.model.QueensCorner
 import com.example.queenscorner.model.Piece
 import com.example.queenscorner.model.Queen
 import com.example.queenscorner.model.Rook
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 
 class BoardActivity : ComponentActivity() {
@@ -29,14 +33,19 @@ class BoardActivity : ComponentActivity() {
     private var game: QueensCorner = QueensCorner()
     private val defaultColor = 0x00FFFFFF // Transparent
     private val selectedColor = 0x6000FF00.toInt() // semi transparent green
+    private val highlightColor = 0x6000FFFF.toInt() // Semi-transparent blue
     private lateinit var turnDisplay: TextView
+    private val highlightedSquares = mutableListOf<Position>()
+    private val ai: Minimax = Minimax()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_board)
         turnDisplay = findViewById<TextView>(R.id.turn_display)
         val zombie = intent.getBooleanExtra("zombie", false)
+        val numPlayers = intent.getIntExtra("numPlayers", 4)
         game.settings.zombie = zombie
+        game.settings.numAi = 4-numPlayers
         setupBoard()
         updateTurnDisplay(game.getCurrentPlayer().name)
     }
@@ -137,10 +146,17 @@ class BoardActivity : ComponentActivity() {
         val buttonId = resources.getIdentifier("x${position.x}y${position.y}", "id", packageName)
         val button = findViewById<Button>(buttonId)
         if (selectedFrom == null) { // No square is selected yet
-            if (game.pieceCheck(game.getCurrentPlayerIndex(), position)) {
+            if (!game.getCurrentPlayer().isAi && game.pieceCheck(game.getCurrentPlayerIndex(), position)) {
                 selectedFrom = position // Set the "from" square
                 // Change the background color to indicate selection
                 button?.setBackgroundColor(selectedColor)
+                // Highlight all possible moves
+                val selectedPiece = game.board.getPiece(position)
+                if(selectedPiece != null) {
+                    highlightPossibleMoves(selectedPiece)
+                }
+
+
             }
         } else {
             // "From" square is already selected, this is the "to" square
@@ -152,12 +168,14 @@ class BoardActivity : ComponentActivity() {
             if (moveSuccessful.first) {
                 // Reset the color of the "from" button
                 fromButton?.setBackgroundColor(defaultColor)
+                resetHighlightedSquares()
                 selectedFrom = null // Clear the selection
                 updateBoard(from, position) // Refresh the board UI to reflect the move
             } else {
                 // Move failed, reset the selection and possibly give feedback
                 fromButton?.setBackgroundColor(defaultColor) // Reset the background color
                 selectedFrom = null
+                resetHighlightedSquares()
                 Toast.makeText(this, "Invalid move", Toast.LENGTH_SHORT).show()
             }
             if (moveSuccessful.second != null){
@@ -188,6 +206,9 @@ class BoardActivity : ComponentActivity() {
         }else {
             game.nextTurn()
             updateTurnDisplay(game.getCurrentPlayer().name)
+            if(game.aiTurn){
+                aiMove()
+            }
         }
         if (piece != null) {
             toView.setImageResource(getPieceDrawable(piece))
@@ -237,6 +258,53 @@ class BoardActivity : ComponentActivity() {
                 if (piece?.owner != null && game.players[piece.owner].pieces.isEmpty()) {
                     squareView?.setImageResource(android.R.color.transparent)
                 }
+            }
+        }
+    }
+
+    private fun highlightPossibleMoves(piece: Piece) {
+        // Reset previous highlights
+        resetHighlightedSquares()
+
+        // Get valid moves for the piece
+        val validMoves = piece.getValidMoves(game.board.board)
+
+        // Highlight each valid move
+        for (move in validMoves) {
+            val buttonId = resources.getIdentifier("x${move.x}y${move.y}", "id", packageName)
+            val button = findViewById<Button>(buttonId)
+
+            if (button != null) {
+                button.setBackgroundColor(highlightColor)
+                highlightedSquares.add(move) // Store highlighted positions to reset later
+            } else {
+                Log.e("HighlightMoves", "Button not found for ID: $buttonId")
+            }
+        }
+    }
+
+    private fun resetHighlightedSquares() {
+        for (position in highlightedSquares) {
+            val buttonId = resources.getIdentifier("x${position.x}y${position.y}", "id", packageName)
+            val button = findViewById<Button>(buttonId)
+
+            if (button != null) {
+                button.setBackgroundColor(defaultColor)
+            } else {
+                Log.e("ResetHighlights", "Button not found for ID: $buttonId")
+            }
+        }
+        highlightedSquares.clear()
+    }
+
+    private fun aiMove() {
+        CoroutineScope(Dispatchers.Main).launch {
+            val bestMove = ai.getBestMove(game.board.board, game)
+            if (bestMove != null) {
+                game.movePiece(bestMove.from, bestMove.to)
+                updateBoard(bestMove.from, bestMove.to)
+                game.nextTurn()
+                updateTurnDisplay(game.getCurrentPlayer().name)
             }
         }
     }

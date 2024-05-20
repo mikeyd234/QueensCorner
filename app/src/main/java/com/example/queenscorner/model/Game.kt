@@ -6,11 +6,13 @@ data class Player(
     var pieces: MutableList<Piece>,
     var hasQueen: Boolean,
     val name: String,
-    var out: Boolean
+    var out: Boolean,
+    var isAi: Boolean
 )
 
 data class Settings(
-    var zombie: Boolean
+    var zombie: Boolean,
+    var numAi: Int
 )
 
 class QueensCorner {
@@ -20,9 +22,10 @@ class QueensCorner {
     val players = mutableListOf<Player>()
     private var currentPlayerIndex: Int = 0
     // Game settings
-    val settings: Settings = Settings(zombie = false)
+    val settings: Settings = Settings(zombie = false, numAi = 0)
     private var hasWinner = false
     private var queensLeft = 4
+    var aiTurn: Boolean = false
 
     // Initialize the game with players and board setup
     init {
@@ -33,10 +36,33 @@ class QueensCorner {
 
     // Set up the players for the game
     private fun setupPlayers() {
-        players.add(Player(0, defaultPieces(0), true, "White", false))
-        players.add(Player(1,defaultPieces(1), true, "Blue", false))
-        players.add(Player(2,defaultPieces(2), true, "Red", false))
-        players.add(Player(3,defaultPieces(3), true, "Black", false))
+        when(settings.numAi){
+            0 ->{
+                players.add(Player(0, defaultPieces(0), true, "White", out = false, false))
+                players.add(Player(1,defaultPieces(1), true, "Blue", out = false, false))
+                players.add(Player(2,defaultPieces(2), true, "Red", out = false, false))
+                players.add(Player(3,defaultPieces(3), true, "Black", out = false, false))
+            }1 ->{
+                players.add(Player(0, defaultPieces(0), true, "White", out = false, false))
+                players.add(Player(1,defaultPieces(1), true, "Blue", out = false, false))
+                players.add(Player(2,defaultPieces(2), true, "Red", out = false, false))
+                players.add(Player(3,defaultPieces(3), true, "Black", out = false, true))
+            }2 ->{
+                players.add(Player(0, defaultPieces(0), true, "White", out = false, false))
+                players.add(Player(1,defaultPieces(1), true, "Blue", out = false, false))
+                players.add(Player(2,defaultPieces(2), true, "Red", out = false, true))
+                players.add(Player(3,defaultPieces(3), true, "Black", out = false, true))
+            }3 ->{
+                players.add(Player(0, defaultPieces(0), true, "White", out = false, false))
+                players.add(Player(1,defaultPieces(1), true, "Blue", out = false, true))
+                players.add(Player(2,defaultPieces(2), true, "Red", out = false, true))
+                players.add(Player(3,defaultPieces(3), true, "Black", out = false, true))
+        }
+
+
+        }
+
+
     }
 
     // Set up the initial pieces on the board
@@ -131,6 +157,9 @@ class QueensCorner {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size
         if(players[currentPlayerIndex].out){
             nextTurn()
+        }
+        if(players[currentPlayerIndex].isAi){
+            aiTurn = true
         }
     }
 
